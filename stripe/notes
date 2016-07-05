@@ -1,3 +1,33 @@
 Sandox account :
 login : info.seanxxxx@gmail.com
 password : Sean@#ab123
+
+
+https://www.thrinacia.com/blog/post/how-to-setup-and-configure-your-stripe-account
+
+
+http://stackoverflow.com/questions/32126676/stripe-for-crowdfunding
+
+
+If it were me, I would:
+
+1.    Create a customer object on each pledge via Stripe API.
+
+2.    Create a card object on each pledge, attach to a customer, also via Stripe API.
+
+3.    Store in your local DB a record identifying the customer and card object in Stripe, and relating it to the campaign. Add a column "has_been_charged" (BOOL) = 0 (false). Add column "has_been_deleted" (BOOL) = 0 (false).
+
+4.    On campaign completion, verify campaign success.
+
+5.    If successful, loop through each DB record WHERE has_been_charged = 0 AND campaign_id = the campaign. Do this in blocks of 100 or 500 or 1000 depenending on DB connectivity and time it takes to loop through.
+
+5a. During loop, retrieve card/customer object via Stripe API, create charge via Stripe API, update database column has_been_charged = 1.
+
+5b. Repeat loop until all charges are completed.
+
+    If unsuccessful, loop through each DB record WHERE has_been_deleted = 0 AND campaign_id = the campaign Again, do this in blocks.
+
+6a. During loop, remove card object via Stripe API (and perhaps also customer object), also update database column has_been_deleted = 1.
+
+6b. Repeat loop until all cards have been removed.
+
